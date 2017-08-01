@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Submarine Commander Game</title>
+    <link rel="stylesheet" type="text/css" href="subComd.css" />
+		<script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+		<script type="text/javascript" src="subComdSine.js"></script>
+		<meta charset="UTF-8">
+	</head>
+
+	<body>
+  	<img id="ucl" src="ucl-logo.png" />
+
+		<div id="pgMobile">
+			<h2> Incompatible Device </h2>
+			<p>
+				It appears that you are accessing this HIT from a mobile device. Mobile devices are not suitable for completing this HIT as a keyboard and screen with decent size are required. <br><br>
+				Please feel free to try this HIT again when you are using a desktop or laptop. <br><br>
+				Thank you!
+			</p>
+		</div>
+
+    <div id="pgIntroduction">
+      <h2> Submarine Commander Game </h2>
+			<p> Thank you for participating in our study. </p>
+      <p style="text-align: justify;">
+				You will play a game where you are the commander of a submarine. Your job is to find and attack enemy ships that will earn you points.
+				You will receive a minimum of $0.20 for completing this HIT, but you may earn up to $1.50 depending on the points you get. <br><br>
+				This HIT should not take more than 15 minutes to complete. You must complete the entire HIT in one sitting without any distractions.
+				If you are not able to complete the HIT in one sitting, we ask that you start the HIT at another time when you are able to do so.
+				If you leave the HIT unattended for too long, the HIT may self-terminate and you may not be able to complete the HIT and obtain your payment. <br><br>
+				Please use Firefox, Chrome, Safari, Microsoft Edge or Internet Explorer, as the game has only been tested for compatibility with these browsers.
+				Please maximize the broswer window, and do not navigate away from the HIT or press the refresh button at any point as this will disrupt the HIT. <br><br>
+				If you are happy to proceed with this HIT, click "Continue".
+      </p>
+		  <input type="button" value="Continue" onclick="consent()" />
+    </div>
+
+		<div id="pgConsent">
+      <h2> Informed Consent </h2>
+      <p style="text-align: justify;">
+				This study has been approved by the UCL Research Ethics Committee CPB/2014/005.
+				The study is conducted by Mr. Yee Siang Chng under supervision of Dr. Maarten Speekenbrink
+				at the Department of Experimental Psychology, University College London. <br><br>
+				Participation in this study is not compulsory.
+				If you choose not to participate, it will involve no penalty or loss of benefits to which you are otherwise entitled.
+				If you decide to take part, you are still free to withdraw at any time and without giving a reason.
+				Only unidentifiable demographic information such as age, gender and education level will be collected in this study.
+				All data will be collected and stored in accordance with the Data Protection Act 1998. <br><br>
+				By continuing with the study, you are agreeing to the following: <br>
+				<ul id="consentItems">
+					<li>I understand that I am free to withdraw from the study without penalty if I so wish
+					and I consent to the processing of data collected from me for the purposes of this study only
+					and that it will not be used for any other purpose.</li>
+					<li>I understand that all information will be treated as strictly confidential
+					and handled in accordance with the provisions of the Data Protection Act 1998.</li>
+					<li>I understand that the information I have submitted will be published as a report.</li>
+					<li>Confidentiality and anonymity will be maintained and it will not be possible to identify me from any publications.</li>
+				</ul> <br>
+				Please enter your MTurkID and check the box below to acknowledge your consent.
+			</p>
+			<label for="mTurkID"> MTurk ID: </label>
+			<input type="text" name="mTurkID" id="mTurkID" /> <br><br>
+			<input type="checkbox" id="consentCheck" value="yes" required/>
+			<label for="consentCheck"> I have read and understand the information above and agree to participate in the study. </label> <br><br>
+		  <input type="button" value="Continue" onclick="instructions()" />
+		</div>
+
+		<div id="pgInstruct">
+			<h2> Game Instructions (1/2) </h2>
+			<p> Please read the instructions for the game carefully.</p>
+			<p style="left: 50px; text-align: left;">
+				<u>OBJECTIVE</u> <br>
+				Enemy ships with different points are hidden throughout the map, <br>
+				and your job is to locate and fire at ships with the most points. <br>
+				The horizontal position that your submarine fires from <br>
+				determines the vertical distance the torpedo travels to. <br>
+				But you will only know the distance travelled by the torpedo <br>
+				and the points at that distance after you have fired. <br><br>
+				<u>POINTS</u> <br>
+				The points are determined by the ship's vertical distance from you. <br>
+				In general, ships of similar points are at similar distances from you. <br>
+				Hitting a ship will not destroy it, so you can keep <br>
+				earning similar points by firing at the same location. <br>
+				However, as the ships drift about on the water, <br>
+				the distance they are at may fluctuate slightly. <br>
+				Also, as the torpedoes are not always accurate, <br>
+				the points at the same distance may fluctuate slightly. <br>
+				Every cumulative 100 points increase your earnings by 1 cent. <br><br>
+			</p>
+			<p><b>Walkthrough of Game Display:</b></p>
+			<img id="gameScreen" src="gameScreen.png" style="width: 800px;"/> <br><br>
+			<input type="button" value="Next" onclick="instructions2()" />
+		</div>
+
+		<div id="pgInstruct2">
+			<h2> Game Instructions (2/2) </h2>
+			<p> Please continue to read the instructions for the game carefully.</p>
+			<p style="left: 25px; text-align: left;">
+				<u>SCENARIOS</u> <br>
+				You will play the game in a total of <span class="changeable" id="totalBlocks"> </span> scenarios. <br>
+				Within a given scenario, the ships generally remain in the same locations. <br>
+				However, in each new scenario, the locations of the ships may change, <br>
+				so points at each location may not be same as the previous scenario. <br><br>
+				<u>AMMUNITION</u> <br>
+				You are only given <span class="changeable" id="firesMax"> </span> torpedoes for each scenario. <br>
+				You may choose to fire from the same horizontal position more than once. <br><br>
+				<u>GAME TIP</u> <br>
+				If there are two horizontal positions where the distance travelled <br>
+				by the torpedoes are similar, the points should also be similar. <br>
+				For example, if the torpedoes fired from Position "A" and Position "B" <br>
+				travel over the same distance ("X"), then both positions will earn <br>
+				a similar amount of points ("Y"). (See diagram below) <br><br>
+			</p>
+			<p><b>"X" is the distance travelled by the torpedo <br>
+			and "+Y" is the points earned for that particular fire.</b></p>
+			<img id="posA" src="posA.png" />
+			<img id="posB" src="posB.png" /> <br><br>
+			<p>
+				To read the instructions again, click "Back". <br>
+				To start the first scenario, click "Begin". <br>
+			</p>
+			<input type="button" value="Back" onclick="return2pg1()" />
+			<input type="button" value="Begin" onclick="attnQn()" />
+		</div>
+
+		<div id="pgAttentionCheck">
+			<h2> Before we continue, please answer the following questions: </h2>
+			<p><b> The distance that the torpedo travels is determined by: </b></p>
+			<table><td style="font-size: 18px;">
+				<input type="radio" name="attentionCheck1" id="attn1_pts" value="pts" />
+				<label for="attn1_pts"> The amount of points of a ship </label> <br>
+				<input type="radio" name="attentionCheck1" id="attn1_subPos" value="subPos" />
+				<label for="attn1_subPos"> The horizontal position of the submarine </label> <br>
+				<input type="radio" name="attentionCheck1" id="attn1_torpeLeft" value="torpeLeft" />
+				<label for="attn1_torpeLeft"> The number of torpedoes left </label> <br>
+			</td></table>
+			<p><b> The amount of points of each ship is determined by: </b></p>
+			<table><td style="font-size: 18px;">
+				<input type="radio" name="attentionCheck2" id="attn2_scenarios" value="scenarios" />
+				<label for="attn2_scenarios"> The number of scenarios left </label> <br>
+				<input type="radio" name="attentionCheck2" id="attn2_torpeLeft" value="torpeLeft" />
+				<label for="attn2_torpeLeft"> The number of torpedoes left </label> <br>
+				<input type="radio" name="attentionCheck2" id="attn2_location" value="location" />
+				<label for="attn2_location"> The ship's vertical distance from the submarine </label> <br>
+			</td></table>
+			<p><b> If torpedoes fired from two different horizontal positions <br> travel a similar distance, their amount of points will be: </b></p>
+			<table><td style="font-size: 18px;">
+				<input type="radio" name="attentionCheck3" id="attn3_similar" value="similar" />
+				<label for="attn3_similar"> Similar </label> <br>
+				<input type="radio" name="attentionCheck3" id="attn3_different" value="different" />
+				<label for="attn3_different"> Different </label> <br>
+				<input type="radio" name="attentionCheck3" id="attn3_random" value="random" />
+				<label for="attn3_random"> Randomly decided </label> <br>
+			</td></table>
+			<br><br>
+			<input type="button" value="OK" onclick="attnCheck()" />
+		</div>
+
+		<div id="pgTrial">
+			<h2> Scenario <span id="blkNum"> 1 </span> </h2>
+			<p style="width: 1000px;"> Use the arrow keys to move the submarine <b>left</b> and <b>right</b>. Press <b>spacebar</b> to fire at the ships.<br> Hitting a ship will not destroy it, so you may choose to fire from the same position more than once. </p>
+			<div id="firingRange">
+				<img id="torpe" src="torpe.png" />
+				<img id="explode" src="explosion.png" />
+				<span id="points"> </span>
+				<span id="distTravel"> </span>
+				<input type="range" name="subPosRange" id="subPos" value="50" min="0" max="100" style="width: 800px;" onchange="updateSubPos()"/> <br><br><br>
+				<h3 class="infobar" id="torpeInfo" style="left: 25px;"> Torpedoes Left: <span class="counters" id="torpeCount"> </span> </h3>
+				<h3 class="infobar" id="posInfo" style="left: 350px;"> Position Value: <span class="counters" id="posVal"> </span> </h3>
+				<h3 class="infobar" id="moneyInfo" style="right: 25px;"> Money Earned: <span class="counters" id="moneyEarned">0</span> cents </h3>
+			</div>
+		</div>
+
+		<div id="pgNextBlk">
+			<h2> Scenario Ended </h2>
+      <p>
+				You scored <span class="changeable" id="blkScore"> </span> points in this scenario. <br><br>
+				Your scores from Scenario 1 to the current scenario are: <br><br> <span id="scoreRecord"> </span> <br><br><br><br>
+				There are <span class="changeable" id="blkLeft"> </span> more scenarios to complete. <br><br>
+				The locations of the enemy ships <span id="changePos"> may have changed</span> in the next scenario! <br><br>
+				When you are ready, click "Continue" to begin the next scenario.
+      </p>
+			<input type="button" value="Continue" onclick="begin()" />
+		</div>
+
+		<div id="pgGameOver">
+			<h1> Game Over </h1>
+			<p>
+				You scored <span class="changeable" id="blkScoreEnd"> </span> points in this scenario. <br><br>
+				Your total score is <span class="changeable" id="totScore"> </span>. <br><br>
+				You've earned a total of <span class="changeable" id="earnings"> </span>. <br>
+				Together with the $0.20 completion reward, you will receive <span class="changeable" id="totalEarnings"> </span>. <br><br><br>
+				Click "Continue" to answer some questions before completing this study.
+			</p>
+			<input type="button" value="Continue" onclick="prediction()"/>
+		</div>
+
+		<div id="pgPrediction">
+			<p style="width: 900px;"> Based on the last scenario, move the torpedoes/sliders to estimate the <b>distance</b> a torpedo will travel from a given <b>position</b>, and guess the respective <b>points</b> by entering the number in the boxes below the sliders.	</p>
+			<div id="predictionRange">
+				<input type="range" name="predictionRange" id="torpePredict1" orient="vertical" value="0" min="0" max="100" style="left: 30px" onchange="updateSubPos()" />
+				<input type="range" name="predictionRange" id="torpePredict2" orient="vertical" value="0" min="0" max="100" style="left: 230px" onchange="updateSubPos()" />
+				<input type="range" name="predictionRange" id="torpePredict3" orient="vertical" value="0" min="0" max="100" style="left: 430px" onchange="updateSubPos()" />
+				<input type="range" name="predictionRange" id="torpePredict4" orient="vertical" value="0" min="0" max="100" style="left: 630px" onchange="updateSubPos()" />
+				<input type="range" name="predictionRange" id="torpePredict5" orient="vertical" value="0" min="0" max="100" style="left: 830px" onchange="updateSubPos()" />
+				<table class="predictTables" style="left: 25px";>
+					<tr>
+						<td> Position: </td>
+						<td> 0 </td>
+					</tr>
+					<tr>
+						<td> Distance: </td>
+						<td> <span id="distPredict1">0</span> yards </td>
+					</tr>
+					<tr>
+						<td> Points: </td>
+						<td> <input type="number" name="ptsPredict" id="ptsPredict1" min="0" max="100" style="width: 50px;" /> </td>
+					</tr>
+				</table>
+				<table class="predictTables" style="left: 205px";>
+					<tr>
+						<td> Position: </td>
+						<td> 25 </td>
+					</tr>
+					<tr>
+						<td> Distance: </td>
+						<td> <span id="distPredict2">0</span> yards </td>
+					</tr>
+					<tr>
+						<td> Points: </td>
+						<td> <input type="number" name="ptsPredict" id="ptsPredict2" min="0" max="100" style="width: 50px;" /> </td>
+					</tr>
+				</table>
+				<table class="predictTables" style="left: 385px";>
+					<tr>
+						<td> Position: </td>
+						<td> 25 </td>
+					</tr>
+					<tr>
+						<td> Distance: </td>
+						<td> <span id="distPredict3">0</span> yards </td>
+					</tr>
+					<tr>
+						<td> Points: </td>
+						<td> <input type="number" name="ptsPredict" id="ptsPredict3" min="0" max="100" style="width: 50px;" /> </td>
+					</tr>
+				</table>
+				<table class="predictTables" style="left: 575px";>
+					<tr>
+						<td> Position: </td>
+						<td> 75 </td>
+					</tr>
+					<tr>
+						<td> Distance: </td>
+						<td> <span id="distPredict4">0</span> yards </td>
+					</tr>
+					<tr>
+						<td> Points: </td>
+						<td> <input type="number" name="ptsPredict" id="ptsPredict4" min="0" max="100" style="width: 50px;" /> </td>
+					</tr>
+				</table>
+				<table class="predictTables" style="left: 750px";>
+					<tr>
+						<td> Position: </td>
+						<td> 100 </td>
+					</tr>
+					<tr>
+						<td> Distance: </td>
+						<td> <span id="distPredict5">0</span> yards </td>
+					</tr>
+					<tr>
+						<td> Points: </td>
+						<td> <input type="number" name="ptsPredict" id="ptsPredict5" min="0" max="100" style="width: 50px;" /> </td>
+					</tr>
+				</table>
+			</div> <br>
+			<input type="button" value="Continue" onclick="questionnaire()"/>
+		</div>
+
+		<div id="pgQuestionnaire">
+			<h2> Finally, please answer these last few questions: </h2>
+			<table>
+				<tr>
+					<b>1. On a 5-point scale from "Very Easy" to "Very Difficult", please rate the difficulty of this game.</b> <br><br>
+					<input type="radio" name="difficulty" id="diff_1" value="1" />
+					<label for="diff_1"> Very Easy </label>
+					<input type="radio" name="difficulty" id="diff_2" value="2" />
+					<label for="diff_2"> Easy </label>
+					<input type="radio" name="difficulty" id="diff_3" value="3" />
+					<label for="diff_3"> Neutral </label>
+					<input type="radio" name="difficulty" id="diff_4" value="4" />
+					<label for="diff_4"> Difficult </label>
+					<input type="radio" name="difficulty" id="diff_5" value="5" />
+					<label for="diff_5"> Very Difficult </label> <br><br><br>
+				</tr>
+				<tr>
+					<b>2. How do you think the ships were positioned in the map?</b> <br><br>
+					<input type="radio" name="shipPos" id="pos_r" value="random" />
+					<label for="pos_r"> Randomly positioned </label>
+					<input type="radio" name="shipPos" id="pos_p" value="pattern" />
+					<label for="pos_p"> Based on a pattern </label>
+					<input type="radio" name="shipPos" id="pos_u" value="uncertain" />
+					<label for="pos_u"> Unable to tell </label> <br><br><br>
+				</tr>
+				<tr>
+					<b>3. How do you think the points were determined for the ships?</b> <br><br>
+					<input type="radio" name="shipPts" id="pts_r" value="random" />
+					<label for="pts_r"> Randomly determined </label>
+					<input type="radio" name="shipPts" id="pts_p" value="pattern" />
+					<label for="pts_p"> Based on a pattern </label>
+					<input type="radio" name="shipPts" id="pts_u" value="uncertain" />
+					<label for="pts_u"> Unable to tell </label> <br><br><br>
+				</tr>
+				<tr>
+					<b>4. Which of the following were useful in helping you to find the high value ships?</b> <br><br>
+					<td>
+						<input type="checkbox" id="usefulSubPos" value="yes" />
+						<label for="usefulSubPos"> Submarine position value </label> <br>
+						<input type="checkbox" id="usefulTorpeDist" value="yes" />
+						<label for="usefulTorpeDist"> Distance travelled by torpedo </label> <br>
+						<input type="checkbox" id="usefulPoints" value="yes" />
+						<label for="usefulPoints"> Points earned on each fire </label>
+					</td>
+				</tr>
+			</table>
+			<br><br>
+			<input type="button" value="Continue" onclick="demog()"/>
+		</div>
+
+		<div id="pgDemog">
+			<h2> Please provide the following information: </h2>
+			<table>
+				<tr>
+					<td> Age: </td>
+					<td> <input type="number" name="age" id="age" min="18" max="99" /> </td>
+				</tr>
+				<tr> <td> <br> </td> </tr>
+				<tr>
+					<td> Gender: </td>
+					<td>
+						<input type="radio" name="sex" id="sex_m" value="male" />
+						<label for="sex_m"> Male </label>
+            <input type="radio" name="sex" id="sex_f" value="female" />
+						<label for="sex_f"> Female </label>
+						<input type="radio" name="sex" id="sex_u" value="undisclosed" />
+						<label for="sex_u"> Prefer not to disclose </label>
+					</td>
+				</tr>
+				<tr> <td> <br> </td> </tr>
+				<tr>
+					<td> Education: </td>
+					<td>
+						<select name="edu" id="edu">
+								<option value=""> </option>
+								<option value="elementary"> Elementary School or equivalent </option>
+								<option value="middle"> Middle School or equivalent </option>
+								<option value="high"> High School or equivalent </option>
+								<option value="bachelor"> Bachelor's Degree </option>
+								<option value="master"> Master's Degree </option>
+								<option value="phd"> Ph.D </option>
+								<option value="undisclosed"> Prefer not to disclose </option>
+						</select>
+					</td>
+				</tr>
+				<tr> <td> <br> </td> </tr>
+				<tr>
+					<td> Browser Used: </td>
+					<td> <input type="text" name="browser" id="browser" /> </td>
+				</tr>
+				<tr> <td> <br> </td> </tr>
+			</table>
+			<br><br>
+			<p> Please ensure that all the information is correct before clicking submit. </p>
+			<input type="button" value="Submit" onclick="submit()"/>
+		</div>
+
+		<div id="pgDebrief">
+			<br><br><br>
+			<p>
+				Thank you for helping us in our study! <br><br>
+				We request that you do not share the details of this experiment with other participants for the accuracy of our results. If you have any other questions regarding this study, please feel free to email our researchers. <br><br>
+				Mr. Yee Siang CHNG (yee.chng.16@ucl.ac.uk) <br>
+				Dr. Maarten SPEEKENBRINK (m.speekenbrink@ucl.ac.uk) <br><br><br>
+				Please use the number below for the validation code in MTurk: <br><br>
+				<span id="validation"> </span>
+			</p>
+		</div>
+
+	</body>
+</html>
